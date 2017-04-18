@@ -60,7 +60,7 @@ contains
 		write(outputUnit, formatString)
 		
 		!Waste some time.
-		call portable_sleep(1.0)
+		call portable_sleep(0.5)
 		deallocate(characterMatrix)
 	end subroutine
 	
