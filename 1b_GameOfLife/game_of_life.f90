@@ -12,7 +12,7 @@ program game_of_life
 
 	call createField(30,20,playground)
 	call createFigures(playground)
-	call printTwoDLogical(6, playground)
+	call printTwoDLogical(6, playground(1:30,1:20))
 
 	do i = 1,10
 		call developLife(playground)
