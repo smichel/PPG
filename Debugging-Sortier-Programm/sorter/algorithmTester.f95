@@ -14,6 +14,7 @@ contains
 		date = 0
 		call date_and_time(values=date)
 		call random_seed(put=date)
+		deallocate(date)	! Speicher wird wieder frei gegeben
 	end subroutine
 
 	! Fill an array with values in a nice range
@@ -28,7 +29,12 @@ contains
 		integer :: i, j
 		do i = lbound(array, 1), ubound(array, 1)
 			write(*,'(f9.0," ",$)') array(i)
-			do j = 1, int(array(i))*kMaxBarWidth/kMaxValue
+			! do j = 1, int(array(i))*kMaxBarWidth/kMaxValue	! Multiplikation des Integers int(array(i)) mit kMaxBarWidth
+										! liefert einen Wert, der ausserhalb des moeglichen Wertebereichs
+										! von Integern liegt. Der Index j ist ausserdem als Integer deklariert,
+										! kMaxBarWidth/kMaxValue liefert jedoch einen Real. 
+			do j = 1, int(array(i)*kMaxBarWidth/kMaxValue)	! hier wird erst die Multiplikation durchgefuehrt und dann in einen Integer
+									! umgewandelt. So wird j nicht zu gross. 
 				write(*,'("-",$)')
 			end do
 			print*
@@ -44,23 +50,23 @@ contains
 		call bubbleSort(someData)
 		call printArray(someData)
 
-		print*
-		print*,"insertion sort:"
-		call randomizeArray(someData)
-		call insertionSort(someData)
-		call printArray(someData)
+		!print*
+		!print*,"insertion sort:"
+		!call randomizeArray(someData)
+		!call insertionSort(someData)
+		!call printArray(someData)
 
-		print*
-		print*,"slow sort:"
-		call randomizeArray(someData)
-		call slowSort(someData)
-		call printArray(someData)
+		!print*
+		!print*,"slow sort:"
+		!call randomizeArray(someData)
+		!call slowSort(someData)
+		!call printArray(someData)
 
-		print*
-		print*,"bucket sort:"
-		call randomizeArray(someData)
-		call startBucketSort(someData)
-		call printArray(someData)
+		!print*
+		!print*,"bucket sort:"
+		!call randomizeArray(someData)
+		!call startBucketSort(someData)
+		!call printArray(someData)
 	end subroutine
 end module
 

@@ -6,7 +6,9 @@ contains
 		integer :: i, j
 		real :: temp
 		do i = lbound(array, 1), ubound(array, 1)
-			do j = lbound(array, 1), ubound(array, 1)
+			! do j = lbound(array, 1), ubound(array, 1)	! beginnt die Schleife bei 0, wird in der Schleife 
+									! ein Wert außerhalb der Grenzen des arrays aufgerufen. 
+			do j = lbound(array, 1) + 1, ubound(array, 1)
 				if(array(j - 1) > array(j)) then	! Are these two elements out of order? If so, swap them.
 					temp = array(j - 1)
 					array(j - 1) = array(j)
