@@ -46,4 +46,16 @@ module mod_lifecycle
 		enddo
 
 	end subroutine
+
+	subroutine setBoundaries(playGround)
+		logical, intent(inout) :: playGround(0:31,0:21)	!Spielfeld
+
+		playGround(0,:)=playGround(30,:)
+		playGround(31,:)=playGround(1,:)
+
+		playGround(:,0)=playGround(:,20)
+		playGround(:,21)=playGround(:,1)
+		
+	end subroutine
+
 end module

@@ -17,8 +17,9 @@ program game_of_life
 	! ruft subroutine printTwoDLogical auf, um das Spielfeld anzuzeigen
 	call printTwoDLogical(outputUnit, playGround(1:30,1:20))
 
-	! fuert 10 Iterationen der subroutine developLife aus und gibt das Ergebnis aus
-	do i = 1,10
+	! fuert 160 Iterationen der subroutine developLife aus und gibt das Ergebnis aus
+	do i = 1,160
+		call setBoundaries(playGround)
 		! ruft subroutine developLife auf, um naechsten Zustand im Lebenszyklus zu erhalten
 		call developLife(playGround)
 		call printTwoDLogical(outputUnit, playGround(1:30,1:20))
