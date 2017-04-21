@@ -1,4 +1,5 @@
 module sorter
+implicit none	! hat gefehlt
 contains
 	! The most simple sorting algorithm with a bad performance.
 	subroutine bubbleSort(array)
@@ -52,7 +53,10 @@ contains
 		call slowsort(array(1 : cutPoint))
 		call slowsort(array(cutPoint + 1 : elementCount))
 		if (array(cutPoint) > array(elementCount)) then
-			tenp = array(cutPoint)
+			! tenp = array(cutPoint)	! die Variable tenp wurde nicht deklariert. Da kein implicit none gesetzt war, bemerkt der Compiler diesen Fehler nicht 
+								! und es wird eine neue Variable tenp einfach beschrieben. Gemeint war hier eigentlich temp, sonst funktioniert der Tausch 
+								! der Elemente nicht. 
+			temp = array(cutPoint)
 			array(cutPoint) = array(elementCount)
 			array(elementCount) = temp
 		end if
@@ -66,12 +70,13 @@ contains
 		real, intent(in) :: minimum, maximum	! Should be the min/max of the values to be sorted.
 		real :: buffer(lbound(array, 1):ubound(array, 1))
 		integer, parameter :: bucketCount = 10
-		integer :: bucketSizes(0:bucketCount), bucketIndices(0:bucketCount), i, curBucket, curSize, nextBucketStart
+	      integer :: bucketSizes(0:bucketCount), bucketIndices(0:bucketCount), i, curBucket, curSize, nextBucketStart
 		
 		! Determine the size of each bucket.
 		bucketSizes = 0
 		do i = lbound(array, 1), ubound(array, 1)
 			curBucket = int(bucketCount*(array(i) - minimum)/(maximum - minimum))
+			write(*,*) curBucket
 			bucketSizes(curBucket) = bucketSizes(curBucket) + 1
 		end do
 		! Determine the start of each bucket.
