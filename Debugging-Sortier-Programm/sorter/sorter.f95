@@ -76,7 +76,6 @@ contains
 		bucketSizes = 0
 		do i = lbound(array, 1), ubound(array, 1)
 			curBucket = int(bucketCount*(array(i) - minimum)/(maximum - minimum))
-			write(*,*) curBucket
 			bucketSizes(curBucket) = bucketSizes(curBucket) + 1
 		end do
 		! Determine the start of each bucket.
@@ -91,10 +90,12 @@ contains
 			bucketIndices(curBucket) = bucketIndices(curBucket) + 1
 		end do
 		! Sort the buckets, bucketIndices now point past the end of the bucket.
-		do curBucket = 0, bucketCount
+		do curBucket = 1, bucketCount
 			curSize = bucketSizes(curBucket)
 			nextBucketStart = bucketIndices(curBucket)
-			if(curSize > 0) then
+			! if (curSize > 0) then
+			if(curSize > 1) then !	Es muessen nur Buckets mit mehr als einem Wert sortiert werden. Buckets mit nur einem Wert 
+			!			koennen nicht sortiert werden
 				call bucketSort(buffer(nextBucketStart - curSize : nextBucketStart - 1), &
 				&               minimum + curBucket*(maximum - minimum)/bucketCount, &
 				&               minimum + (curBucket + 1)*(maximum - minimum)/bucketCount)
