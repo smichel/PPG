@@ -50,23 +50,23 @@ contains
 		call bubbleSort(someData)
 		call printArray(someData)
 
+		print*
+		print*,"insertion sort:"
+		call randomizeArray(someData)
+		call insertionSort(someData)
+		call printArray(someData)
+
 		!print*
-		!print*,"insertion sort:"
+		!print*,"slow sort:"
 		!call randomizeArray(someData)
-		!call insertionSort(someData)
+		!call slowSort(someData)
 		!call printArray(someData)
 
-		print*
-		print*,"slow sort:"
-	      call randomizeArray(someData)
-		call slowSort(someData)
-		call printArray(someData)
-
-		print*
-		print*,"bucket sort:"
-		call randomizeArray(someData)
-		call startBucketSort(someData)
-		call printArray(someData)
+		!print*
+		!print*,"bucket sort:"
+		!call randomizeArray(someData)
+		!call startBucketSort(someData)
+		!call printArray(someData)
 	end subroutine
 end module
 

@@ -24,15 +24,19 @@ contains
 		real, dimension(:), intent(inout) :: array
 		integer :: i, j
 		real :: temp
-		do i = lbound(array, 1), ubound(array, 1)
+		!do i = lbound(array, 1), ubound(array, 1) 
+		do i = lbound(array, 1)+1, ubound(array, 1)
 			temp = array(i)
-			do j = i - 1, 1, -1
+			!do j = i - 1, 1, -1 Wenn der Index j nicht von i-1 bis 0 iteriert, w
+			do j = i - 1, 0, -1
+				write(*,*) j
 				if(array(j) <= temp) then
 					array(j + 1) = temp
 					exit
 				else
 					array(j + 1) = array(j)
 				end if
+
 			end do
 		end do
 	end subroutine
