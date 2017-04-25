@@ -50,10 +50,11 @@ module mod_lifecycle
 	subroutine setBoundaries(playGround)
 		logical, intent(inout) :: playGround(0:31,0:21)	!Spielfeld
 
-		playGround(0,:)=playGround(30,:)
-		playGround(31,:)=playGround(1,:)
+		! wende periodische Randbedingungen an: 
+		playGround(0,:)=playGround(30,:)	! die oberste Zeile wird mit der zweituntersten gleichgesetzt
+		playGround(31,:)=playGround(1,:)	! die unterste Zeile wird mit der zweitobersten gleichgesetzt. 
 
-		playGround(:,0)=playGround(:,20)
+		playGround(:,0)=playGround(:,20)	! genauso fuer die Spalten
 		playGround(:,21)=playGround(:,1)
 		
 	end subroutine

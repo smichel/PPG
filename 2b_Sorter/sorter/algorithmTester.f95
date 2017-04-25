@@ -31,10 +31,10 @@ contains
 			write(*,'(f9.0," ",$)') array(i)
 			! do j = 1, int(array(i))*kMaxBarWidth/kMaxValue	! Multiplikation des Integers int(array(i)) mit kMaxBarWidth
 										! liefert einen Wert, der ausserhalb des moeglichen Wertebereichs
-										! von Integern liegt. Der Index j ist ausserdem als Integer deklariert,
-										! kMaxBarWidth/kMaxValue liefert jedoch einen Real. 
-			do j = 1, int(array(i)*kMaxBarWidth/kMaxValue)	! hier wird erst die Multiplikation durchgefuehrt und dann in einen Integer
-									! umgewandelt. So wird j nicht zu gross. 
+										! von Integern liegt. Fuer grosse Arrayelemente wird j deshalb negativ. 
+			do j = 1, int(array(i)*kMaxBarWidth/kMaxValue)	! hier wird erst die Multiplikation von einem Real mit einem Integer 
+									! durchgefuehrt und dann erst in einen Integer umgewandelt. 
+									! So wird j nicht zu groß.  
 				write(*,'("-",$)')
 			end do
 			print*
@@ -56,17 +56,17 @@ contains
 		call insertionSort(someData)
 		call printArray(someData)
 
-		!print*
-		!print*,"slow sort:"
-		!call randomizeArray(someData)
-		!call slowSort(someData)
-		!call printArray(someData)
+		print*
+		print*,"slow sort:"
+		call randomizeArray(someData)
+		call slowSort(someData)
+		call printArray(someData)
 
-		!print*
-		!print*,"bucket sort:"
-		!call randomizeArray(someData)
-		!call startBucketSort(someData)
-		!call printArray(someData)
+		print*
+		print*,"bucket sort:"
+		call randomizeArray(someData)
+		call startBucketSort(someData)
+		call printArray(someData)
 	end subroutine
 end module
 

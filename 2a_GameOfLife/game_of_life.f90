@@ -19,6 +19,7 @@ program game_of_life
 
 	! fuert 160 Iterationen der subroutine developLife aus und gibt das Ergebnis aus
 	do i = 1,160
+		! wende zyklische Randbedingungen vor jedem Lifecycle an 
 		call setBoundaries(playGround)
 		! ruft subroutine developLife auf, um naechsten Zustand im Lebenszyklus zu erhalten
 		call developLife(playGround)

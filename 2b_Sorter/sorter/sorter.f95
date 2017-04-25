@@ -24,17 +24,18 @@ contains
 		real, dimension(:), intent(inout) :: array
 		integer :: i, j
 		real :: temp
-		!do i = lbound(array, 1), ubound(array, 1) 
+		!do i = lbound(array, 1), ubound(array, 1)	! wenn i bei 1 beginnt, wird in der naechsten Schleife auf den Index 0
+								! zugegriffen, der jedoch nicht existiert.   
 		do i = lbound(array, 1)+1, ubound(array, 1)
 			temp = array(i)
-			!do j = i - 1, 1, -1 Wenn der Index j nicht von i-1 bis 0 iteriert, w
-			do j = i - 1, 0, -1
-				write(*,*) j
+			do j = i - 1, 1, -1 
 				if(array(j) <= temp) then
 					array(j + 1) = temp
 					exit
 				else
 					array(j + 1) = array(j)
+					array(j) = temp	! Die gemerkte Zahl muss an die Stelle der verschobenen Zahl gesetzt werden. 
+							! Andernfalls geht die gemerkte Zahl "verloren" und die verschobene Zahl wiederholt sich einfach.  
 				end if
 
 			end do
@@ -57,9 +58,10 @@ contains
 		call slowsort(array(1 : cutPoint))
 		call slowsort(array(cutPoint + 1 : elementCount))
 		if (array(cutPoint) > array(elementCount)) then
-			! tenp = array(cutPoint)	! die Variable tenp wurde nicht deklariert. Da kein implicit none gesetzt war, bemerkt der Compiler diesen Fehler nicht 
-								! und es wird eine neue Variable tenp einfach beschrieben. Gemeint war hier eigentlich temp, sonst funktioniert der Tausch 
-								! der Elemente nicht. 
+			! tenp = array(cutPoint)	! die Variable tenp wurde nicht deklariert. Da kein implicit none gesetzt war, 
+							! bemerkt der Compiler diesen Fehler nicht und es wird eine neue Variable 
+							! tenp einfach beschrieben. Gemeint war hier eigentlich temp, sonst 
+							! funktioniert der Tausch der Elemente nicht. 
 			temp = array(cutPoint)
 			array(cutPoint) = array(elementCount)
 			array(elementCount) = temp
@@ -94,7 +96,7 @@ contains
 			bucketIndices(curBucket) = bucketIndices(curBucket) + 1
 		end do
 		! Sort the buckets, bucketIndices now point past the end of the bucket.
-		do curBucket = 1, bucketCount
+		do curBucket = 0, bucketCount
 			curSize = bucketSizes(curBucket)
 			nextBucketStart = bucketIndices(curBucket)
 			! if (curSize > 0) then
