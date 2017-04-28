@@ -1,0 +1,73 @@
+#! /bin/bash
+# Generic Makefile
+# Copyright (C) 2012,2013 Nathanael Hübbe
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# 
+# You can contact the authors of this programm via sourceforge:
+# http://sourceforge.net/projects/brilliantasreal/
+
+############
+# Compile a source file located in a subdirectory.
+############
+# $compileFlags: The options to be passed to the compiler.
+# $includeFlags: More options to be passed to the compiler.
+# $rootdir: The path the argument paths are relative to.
+# $builddir: The directory to place the object file.
+#
+# $1: The subdirectory of the source, relative to the root direktory of the Makefile.
+# $2: The name of the source file.
+# $3: The name of the corresponding object file.
+#
+# The effective path of the object file is of the form
+# $rootdir/builddir/subdir/filename
+# The source file is found at
+# $rootdir/subdir/filename
+############
+
+subdir=$1
+sourcefile=$2
+objfile=$3
+
+cd $rootdir
+mkdir -p $builddir/$subdir
+mkdir -p $builddir/.modules
+cd $subdir
+
+if [[ $debugCompilation != "" ]] ; then
+	libtoolCommand="libtool --mode=compile"
+else
+	libtoolCommand="libtool --quiet --mode=compile"
+fi
+
+libtoolCheck=${objfile%.lo}
+fortranCheck=${sourcefile%.f{77,90,95}}
+
+if [[ $libtoolCheck != $objfile ]] ; then
+	if [[ $fortranCheck == $sourcefile ]] ; then
+		commandLine="$libtoolCommand $cppCompiler -c -o $rootdir/$builddir/$subdir/${objfile%.lo}.o $compileFlags $includeFlags $sourcefile"
+	else
+		commandLine="$libtoolCommand $fortranCompiler -cpp -c -J $rootdir/$builddir/.modules -o $rootdir/$builddir/$subdir/${objfile%.lo}.o $compileFlags $includeFlags $sourcefile"
+	fi
+else
+	if [[ $fortranCheck == $sourcefile ]] ; then
+		commandLine="$cppCompiler -c -o $rootdir/$builddir/$subdir/$objfile $compileFlags $includeFlags $sourcefile"
+	else
+		commandLine="$fortranCompiler -cpp -c -J $rootdir/$builddir/.modules -o $rootdir/$builddir/$subdir/$objfile $compileFlags $includeFlags $sourcefile"
+	fi
+fi
+if [[ $debugCompilation != "" ]] ; then
+	echo in \"$subdir\": $commandLine
+fi
+$commandLine

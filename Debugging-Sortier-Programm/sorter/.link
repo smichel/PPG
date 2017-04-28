@@ -1,0 +1,59 @@
+#! /bin/bash
+# BrilliantAsReality - A raytracer combining simplicity and power.
+# Copyright (C) 2012 Nathanael Hübbe
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# 
+# You can contact the authors of this programm via sourceforge:
+# http://sourceforge.net/projects/brilliantasreal/
+
+############
+# Link several object files together.
+############
+# $linkerCommand: The command to be used as the linker.
+# $linkFlags: The options to be passed to the linker.
+# $libFlags: More options to be passed to the linker.
+# $rootdir: The path the argument paths are relative to.
+# $productsdir: The directory to place the linked file.
+#
+# $1: The name of the output file.
+# $...: The paths of the object files.
+#
+# The effective path of the object files is of the form
+# $rootdir/filepath
+# The result is placed at
+# $rootdir/productsdir/filename
+############
+
+cd $rootdir
+mkdir -p $productsdir
+outputFile=$1
+shift 1
+
+libtoolTag=
+case $linkerCommand in
+	(*fort*) libtoolTag="--tag=FC";;
+	(*f77*) libtoolTag="--tag=FC";;
+	(*f90*) libtoolTag="--tag=FC";;
+	(*f95*) libtoolTag="--tag=FC";;
+	(*cc*) libtoolTag="--tag=CC";;
+esac
+
+if [[ $debugLinking != "" ]] ; then
+	commandLine="libtool --mode=link $libtoolTag $linkerCommand $linkFlags -o $productsdir/$outputFile $@ $libFlags"
+	echo $commandLine
+else
+	commandLine="libtool --quiet --mode=link $libtoolTag $linkerCommand $linkFlags -o $productsdir/$outputFile $@ $libFlags"
+fi
+$commandLine

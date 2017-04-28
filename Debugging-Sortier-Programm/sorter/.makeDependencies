@@ -1,0 +1,170 @@
+#! /bin/bash
+# Generic Makefile
+# Copyright (C) 2012,2013 Nathanael Hübbe
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# 
+# You can contact the authors of this programm via sourceforge:
+# http://sourceforge.net/projects/brilliantasreal/
+
+############
+# Build the correct dependencies for a source file located in a subdirectory.
+############
+# $includeFlags: The options to be passed to the compiler.
+# $rootdir: The path the argument paths are relative to.
+# $builddir: The directory to place the object file.
+#
+# $1: The subdirectory of the source, relative to the root direktory of the Makefile.
+# $2: The name of the source file.
+# $3: The name of the corresponding object file.
+# $4: The name of the dependency file to be generated.
+#
+# The effective path of the object and dependency files are of the form
+# $rootdir/builddir/subdir/filename
+# The source file is found at
+# $rootdir/subdir/filename
+############
+
+subdir=${1%/}
+sourcefile=$2
+objfile=$3
+depfile=$4
+
+tempFiles=
+
+# Create the raw dependency file and parse the preprocessor output for modules and uses if the source is a fortran file.
+cd $rootdir
+mkdir -p $builddir/$subdir
+cd $subdir
+modules=
+uses=
+fortranCheck=${sourcefile%.f77}
+fortranCheck=${fortranCheck%.f90}
+fortranCheck=${fortranCheck%.f95}
+if [[ $fortranCheck == $sourcefile ]] ; then
+	$cppCompiler -M -MF $rootdir/$builddir/$subdir/$depfile.temp $includeFlags $sourcefile
+	tempFiles="$tempFiles $rootdir/$builddir/$subdir/$depfile.temp"
+else
+	$fortranCompiler $compileFlags -cpp -E -MD -MF $rootdir/$builddir/$subdir/$depfile.temp -o $rootdir/$builddir/$subdir/$sourcefile.temp $includeFlags $sourcefile
+	tempFiles="$tempFiles $rootdir/$builddir/$subdir/$depfile.temp $rootdir/$builddir/$subdir/$sourcefile.temp"
+	moduleStream="$(grep -i -e "^[^!&\"']*module\s*\w" -e "^[^!&\"']*use" -e "^[^!&\"']*include" < $rootdir/$builddir/$subdir/$sourcefile.temp)"
+	moduleStream="${moduleStream,,}"
+	interpretModule=no
+	interpretUse=no
+	interpretEnd=no
+	for curWord in $moduleStream ; do
+		case $curWord in
+			(module)
+				if [[ $interpreteUse == "yes" || $interpreteModule == "yes" ]] ; then
+					echo Error: use or module keyword followed by module keyword
+					exit 1
+				fi
+				if [[ $interpreteEnd == "yes" ]] ; then
+					interpreteEnd=no
+				else
+					interpreteModule=yes
+				fi
+			;; (use)
+				if [[ $interpreteUse == "yes" || $interpreteModule == "yes" ]] ; then
+					echo Error: use or module keyword followed by use keyword
+					exit 1
+				fi
+				interpreteUse=yes
+			;; (end)
+				if [[ $interpreteUse == "yes" || $interpreteModule == "yes" || $interpreteEnd == "yes" ]] ; then
+					echo Error: use, module or end keyword followed by end keyword
+					exit 1
+				fi
+				interpreteEnd=yes
+			;; (include)
+				echo "Error: Cannot handle fortran include statements. Use #include instead."
+				exit 1
+			;; (*)
+				if [[ $interpreteUse == "yes" ]] ; then
+					uses="$uses ${curWord/,/}"
+					interpreteUse=no
+				elif [[ $interpreteModule == "yes" ]] ; then
+					modules="$modules ${curWord/,/}"
+					interpreteModule=no
+				fi
+				interpreteEnd=no
+			;;
+		esac
+	done
+fi
+cd $rootdir
+
+# Add the path information to local includes.
+# $1: The path to be converted.
+# $convertedPath: Output. The possibly modified path.
+function convertPath() {
+	if [[ $1 == "" ]] ; then
+		convertedPath=
+	elif [[ $1 == /* ]] ; then
+		convertedPath=$1
+	else
+		convertedPath=$subdir/$1
+		convertedPath=${convertedPath#./}	#subdir may be . - remove it.
+	fi
+}
+
+outputDeps=
+truncate -s 0 $builddir/$subdir/$depfile
+
+# If there are fortran modules produced by this file, add rules to touch the .mod files and to clean them
+for curModule in $modules ; do
+	echo "clean$curModule.mod:;rm -f $builddir/.modules/$curModule.mod" >> $builddir/$subdir/$depfile
+	echo "clean: clean$curModule.mod" >> $builddir/$subdir/$depfile
+	outputDeps="$outputDeps $builddir/.modules/$curModule.mod"
+done
+if [[ $modules != "" ]] ; then
+	touchArguments="$outputDeps"
+	# XXX: This is extremely awkward, but I am at a loss at how to do this better (= no double compilation when not building the default and still correct).
+	# The problem is, that the modules are updated by compiling at _any_ optimization level, but there is simply no way to tell make "Consider this file up to date if you have rebuilt _any_ of its prerequisites". So the only work around seems to be to make the module files depend on the object file at the deployment optimization level and put up with the fact, that this optimization level will allways be kept up to date.
+	outputDeps="$outputDeps: $builddir/$subdir/${objfile%.o}\$(deploymentOptimizationLevel).o"
+	outputDeps=${outputDeps//\/.\//\/}	#subdir may be . - remove it, if that is the case.
+	echo $outputDeps >> $builddir/$subdir/$depfile
+	echo -e "	@touch $touchArguments" >> $builddir/$subdir/$depfile
+fi
+
+# Rules for object file and dependency file are separated, so that the object file can depend on more things than the dependency file (like the .mod files in the fortran case).
+outputDeps="\$(foreach oLevel,\$(optimizationLevels),$builddir/$subdir/${objfile%.o}\$(oLevel).o $builddir/$subdir/${objfile%.o}\$(oLevel).lo ): $builddir/$subdir/$depfile"
+outputDeps=${outputDeps//\/.\//\/}	#subdir may be . - remove it, if that is the case.
+for curModule in $uses ; do
+	# Module files may be provided by libraries. These must not be listed as prerequisites in builddir/.modules/, otherwise we get either build failures or (with dummy rules) compile dependent files every time.
+	( echo program test ; echo use $curModule ; echo end program ) > $builddir/.makeDepedenciesTest$sourcefile
+	tempFiles="$tempFiles $builddir/.makeDepedenciesTest$sourcefile $builddir/.makeDepedenciesTest$objfile"
+	if $fortranCompiler $compileFlags $includeFlags -o $builddir/.makeDepedenciesTest$objfile $builddir/.makeDepedenciesTest$sourcefile 2> /dev/null ; then
+		#FIXME: To be correct, we would need to determine where the fortran compiler found this module file.
+		echo "Module $curModule is provided by some library. Skipping this dependency."
+	else
+		outputDeps="$outputDeps $builddir/.modules/$curModule.mod"
+	fi
+done
+echo $outputDeps >> $builddir/$subdir/$depfile
+
+# Finally the rule with all the dependencies caused by preprocessing
+outputDeps="$builddir/$subdir/$depfile:"	#The targets of the dependencies.
+outputDeps=${outputDeps//\/.\//\/}	#subdir may be . - remove it, if that is the case.
+dependencies="$(cat $builddir/$subdir/$depfile.temp)"	#Get the dependencies.
+dependencies="${dependencies#*:}"	#Cleave off the wrong target.
+for path in $dependencies ; do	#Convert the dependency information.
+	path=${path%\\}
+	convertPath $path
+	outputDeps="$outputDeps $convertedPath"
+done
+echo $outputDeps >> $builddir/$subdir/$depfile
+
+#cleanup
+rm -f $tempFiles
