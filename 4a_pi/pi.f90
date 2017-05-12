@@ -11,7 +11,7 @@ program pi
 	double precision :: integral = 0 ! Pi
 	double precision :: pie	! Pi
 	
-	width = 1./resolution 
+	width = 1.d0/resolution 
 	master = 0
 	
 	call MPI_INIT(ierr)	! Initialisieren der Parallelisierung
@@ -19,7 +19,7 @@ program pi
 		CALL MPI_COMM_SIZE(MPI_COMM_WORLD,sice,ierr)	! Anzahl an Prozessen
 				
 		do i = 1+(rank*(resolution/sice)), (rank+1)*(resolution/sice)	! Durch 'rank' wird die Schleife auf die Prozesse verteilt
-			partsum=partsum + ((4./(1+(i*width)**2)+4./(1+((i-1)*width)**2))/2.*width)	! Pi wird durch Integration berechnet
+			partsum=partsum + ((4.d0/(1.d0+(i*width)**2)+4.d0/(1.d0+((i-1)*width)**2))/2.d0*width)	! Pi wird durch Integration berechnet
 		enddo
 		if (rank .ne. master) then	! Alle nicht Masterprozesse senden ihr Teilergebnis (partsum) an Master
 			call MPI_SEND(partsum,1,MPI_DOUBLE_PRECISION,master,2017,MPI_COMM_WORLD,ierr)
