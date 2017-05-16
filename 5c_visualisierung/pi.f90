@@ -21,23 +21,25 @@ program pi
 		do i = 1+(rank*(resolution/sice)), (rank+1)*(resolution/sice)	! Durch 'rank' wird die Schleife auf die Prozesse verteilt
 			partsum=partsum + ((4.d0/(1.d0+(i*width)**2)+4.d0/(1.d0+((i-1)*width)**2))/2.d0*width)	! Pi wird durch Integration berechnet
 		enddo
-! 		if (rank .ne. master) then	! Alle nicht Masterprozesse senden ihr Teilergebnis (partsum) an Master
-! 			call MPI_SEND(partsum,1,MPI_DOUBLE_PRECISION,master,2017,MPI_COMM_WORLD,ierr)
-! 		else
-! 			integral = partsum	! partsum ist hier der vom Masterprozess berechnete Teil von Pi
-! 			do i = 1, sice-1	! fuer alle weiteren Prozesse wird die Teilsumme abgerufen
-! 				call MPI_RECV(partsum,1,MPI_DOUBLE_PRECISION,i,2017,MPI_COMM_WORLD,status,ierr)
-! 				integral=integral+partsum	! Aufsummieren der Teilergebnisse
-! 			enddo
-! 			
-! 		endif
-		call MPI_REDUCE(partSum, integral, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+ 		if (rank .ne. master) then	! Alle nicht Masterprozesse senden ihr Teilergebnis (partsum) an Master
+ 			call MPI_SEND(partsum,1,MPI_DOUBLE_PRECISION,master,2017,MPI_COMM_WORLD,ierr)
+ 		else
+			call sleep(1)
+ 			integral = partsum	! partsum ist hier der vom Masterprozess berechnete Teil von Pi
+ 			do i = 1, sice-1	! fuer alle weiteren Prozesse wird die Teilsumme abgerufen
+ 				call MPI_RECV(partsum,1,MPI_DOUBLE_PRECISION,i,2017,MPI_COMM_WORLD,status,ierr)
+ 				integral=integral+partsum	! Aufsummieren der Teilergebnisse
+ 			enddo
+ 			
+ 		endif
+!		call MPI_REDUCE(partSum, integral, 1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 		
 		if (rank .eq. master) then	
 			write(*,*) integral	! Ausgabe von Pi
 		endif
-		
-		call sleep(1)
+		if (rank .ne. master) then
+			call sleep(1)
+		endif
 	CALL MPI_FINALIZE(ierr)	! Beenden des Parallelisierungsprozesses
 	
 
