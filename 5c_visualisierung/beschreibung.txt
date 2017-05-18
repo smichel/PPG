@@ -1,4 +1,0 @@
-Auf Bild 1 führen alle Prozesse nach dem Berechnen und Summieren von Pi einen sleep Befehl aus. Das Sleep soll eine rechenintensive Aufgabe simulieren.
-Man sieht, dass der Masterprozess erst warten muss bis alle anderen Prozesse ihre Variablen gesendet haben. Erst dann kann der Masterprozess weitere Berechnungen (call sleep) durchführen.
-
-Auf Bild 2 ist eine optimierte Version des Programms zu sehen. Hier führt der Master erst Berechnungen durch und empfängt danach die gesendeten Variablen der anderen Prozesse. Wichtig ist, dass der Masterprozess nur berechnungen unabhängig von Pi durchführen kann.
