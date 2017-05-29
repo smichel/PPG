@@ -3,7 +3,7 @@ die ersten N-1 Prozesse bekommen gleich viele Zeilen der Gesamtmatrix (24x24) al
 zugewiesen. Die jeweilige Anzahl an Zeilen Nz erhält man, indem man die Anzahl der Zeilen 
 der Gesamtmatrix (24) ganzzahlig durch (numProc-1) teilt. Der letzte Prozess erhält den Rest. Die 
 Anzahl der Zeilen der Teilmatrix des letzten Prozesses, erhält man mit dem Modulo Befehl: 
-mod(24,24/(numProc-1)).
+mod(24,int(24/(numProc-1))).
 Bei der Verteilung muss außerdem Beachtet werden, dass die einzelnen Prozesse zur Berechnung 
 des Abtaststerns jeweils die Randwerte von anderen Prozessen benötigen. Die Teilmatrizen 2 bis 
 N-1 benötigen deshalb zusätzlich jeweils eine Zeile unten und oben. Die Teilmatrix 1 benötigt nur 
