@@ -57,13 +57,13 @@ MODULE parallel
 			endif		
 		endif
 		
-		do i=1,numProc
-			sendcounts(i) = sendcounts(i) + 2 * (numEl + 1)
-			write(*,*) sendcounts(i)
-			print*
-			write(*,*) displacement(i)
-			print*
-		enddo 
+! 		do i=1,numProc
+! 			sendcounts(i) = sendcounts(i) + 2 * (numEl + 1)
+! 			write(*,*) sendcounts(i)
+! 			print*
+! 			write(*,*) displacement(i)
+! 			print*
+! 		enddo 
 		
 
 			

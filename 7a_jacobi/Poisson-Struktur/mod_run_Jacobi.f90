@@ -14,8 +14,8 @@ MODULE run
 		integer :: iterations = 400000	! maximale Anzahl an Iterationen
 		integer :: t, i, j	! Zaehlindizes 		
 		double precision, dimension(:,:),allocatable :: dummy	! Hilfsmatrix, auf die neue Elemente geschrieben werden
-		integer, allocatable, dimension(:) :: displacement, sendcounts ! Vektoren fuer ScatterV und GatherV
-		integer, allocatable :: chunk(:,:) ! Teilmatrix
+		integer, dimension(:), allocatable :: displacement, sendcounts ! Vektoren fuer ScatterV und GatherV
+		integer, dimension(:,:), allocatable :: chunk ! Teilmatrix
 		integer :: lines, rest  ! blabla
 		
 		! calculate with jacobi Method
@@ -27,6 +27,10 @@ MODULE run
 	
 		if (myRank .eq. 0) then
 			call getIndices(numProc, numEl, sendcounts, displacement)
+			write(*,*) sendcounts(1)
+			print*
+			write(*,*) displacement(1)
+			print*
 		endif 
 
 			
