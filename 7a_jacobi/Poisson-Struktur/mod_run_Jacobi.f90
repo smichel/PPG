@@ -10,7 +10,7 @@ MODULE run
 		
 		integer :: myRank,numProc,ierror
 		double precision, dimension(0:,0:), intent(inout) :: matrix
-		integer :: numEl = 98	! matrix hat (numEl+1)x(numEl+1) Elemente 
+		integer :: numEl = 99	! matrix hat (numEl+1)x(numEl+1) Elemente 
 		integer :: iterations = 400000	! maximale Anzahl an Iterationen
 		integer :: t, i, j	! Zaehlindizes 		
 		double precision, dimension(:,:),allocatable :: dummy	! Hilfsmatrix, auf die neue Elemente geschrieben werden

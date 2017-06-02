@@ -5,7 +5,7 @@ MODULE initialize
 	SUBROUTINE createMatrix(matrix) !more parameters as needed
 		IMPLICIT NONE
 		double precision, dimension(:,:),allocatable ,intent(inout) :: matrix
-		integer, parameter :: dimension = 98	! wird benutzt um Matrix der Groesse (dimension+1) x (dimension+1) zu erstellen
+		integer, parameter :: dimension = 99	! wird benutzt um Matrix der Groesse (dimension+1) x (dimension+1) zu erstellen
 		
 		allocate(matrix(0:dimension,0:dimension))	!Matrix wird alloziiert 
 		matrix(:,:) = 0.	! Matrix wird mit 0 initialisiert
@@ -16,7 +16,7 @@ MODULE initialize
 		IMPLICIT NONE
 		double precision, dimension(0:,0:), intent(inout) :: matrix		
 		!initialize matrix	
-		integer, parameter :: dimension = 98
+		integer, parameter :: dimension = 99
 		double precision, parameter :: grid_width = 1./dimension	! Gitterweite	
 		integer :: i	! Zaehlindex
 		
