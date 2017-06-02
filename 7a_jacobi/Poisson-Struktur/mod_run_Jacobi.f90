@@ -1,15 +1,16 @@
 MODULE run
 	IMPLICIT NONE
 	CONTAINS
+
 	
 	SUBROUTINE calculate(matrix) !more parameters as needed
-		use mpi
+		USE mpi
 		USE parallel
 		IMPLICIT NONE
 		
 		integer :: myRank,numProc,ierror
 		double precision, dimension(0:,0:), intent(inout) :: matrix
-		integer :: numEl = 96	! matrix hat (numEl+1)x(numEl+1) Elemente 
+		integer :: numEl = 98	! matrix hat (numEl+1)x(numEl+1) Elemente 
 		integer :: iterations = 400000	! maximale Anzahl an Iterationen
 		integer :: t, i, j	! Zaehlindizes 		
 		double precision, dimension(:,:),allocatable :: dummy	! Hilfsmatrix, auf die neue Elemente geschrieben werden
@@ -24,8 +25,6 @@ MODULE run
 		call MPI_COMM_RANK(MPI_COMM_WORLD,myRank,ierror)    ! aktueller Rang des Prozesses wird abgefragt
 		call MPI_COMM_SIZE(MPI_COMM_WORLD,numProc,ierror)   ! Anzahl an Prozessen wird abgefragt
 	
-		allocate(displacement(numProc))
-		allocate(sendcounts(numProc))
 		if (myRank .eq. 0) then
 			call getIndices(numProc, numEl, sendcounts, displacement)
 		endif 

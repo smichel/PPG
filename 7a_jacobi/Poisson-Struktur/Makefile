@@ -32,7 +32,7 @@ mod_finalize.o: mod_finalize.f90
 
 	
 run:poisson_Jacobi.x
-	/usr/bin/time mpiexec -n 7 ./poisson_Jacobi.x
+	/usr/bin/time mpiexec -n 3 ./poisson_Jacobi.x
 	
 
 
