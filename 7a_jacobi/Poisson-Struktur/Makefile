@@ -9,8 +9,8 @@ FLAGS =
 all: poisson_Jacobi.x
 
 
-poisson_Jacobi.x: mod_initialize.o mod_run_Jacobi.o mod_finalize.o poisson.o
-	$(CC) $(FLAGS) -o poisson_Jacobi.x poisson.o mod_initialize.o mod_run_Jacobi.o mod_finalize.o
+poisson_Jacobi.x: mod_initialize.o mod_run_Jacobi.o mod_finalize.o mod_parallel.o poisson.o
+	$(CC) $(FLAGS) -o poisson_Jacobi.x poisson.o mod_initialize.o mod_run_Jacobi.o mod_finalize.o mod_parallel.o
 
 
 poisson.o: poisson.f90
@@ -18,6 +18,9 @@ poisson.o: poisson.f90
 	
 mod_initialize.o: mod_initialize.f90
 	$(CC) $(FLAGS) -c mod_initialize.f90
+	
+mod_parallel.o: mod_parallel.f90
+	$(CC) $(FLAGS) -c mod_parallel.f90
 
 
 mod_run_Jacobi.o: mod_run_Jacobi.f90
