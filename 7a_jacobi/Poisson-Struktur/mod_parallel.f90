@@ -12,8 +12,8 @@ MODULE parallel
 		allocate(displacement(numProc))
 		allocate(sendcounts(numProc))
 		
-		if (mod((numEl - 1),numProc)==0) then
-			
+		if (mod((numEl - 1),numProc)==0) then !comments need to be added
+			write (*,*) 'Fall 1'
 			lines=(numEl - 1)/numProc
 			
 			do i=1,numProc
@@ -24,34 +24,41 @@ MODULE parallel
 			enddo
 			
 		else 
+			if (mod(numEl-1,numProc-1) == 0) then
+				lines = int((numEl-1)/(numProc))
+				rest = mod(numEl-1,numProc)
+				write (*,*) 'Fall 2', lines, rest			
+				do i=1,numProc
+					sendcounts(i) = lines*(numEl+1)
 			
-			lines = int((numEl+1)/(numProc-1))
-			rest = mod(numEl+1,lines)*(numEl+1)
+					if (i==numProc) then
+						sendcounts(i)=lines * (numEl +1)+rest*(numEl +1)
+					endif
 			
-			do i=1,numProc
-				sendcounts(i) = lines*(numEl+1)
-			
-				if (i==numProc) then
-					sendcounts(i)=rest
-				endif
-			
-				displacement(i)=lines*(numEl+1)*(i-1)
+					displacement(i)=lines*(numEl+1)*(i-1)
 
-			enddo
-					
+				enddo
+				
+			else
+
+				lines = int((numEl-1)/(numProc-1))
+				rest = mod(numEl-1,numProc-1)
+				write (*,*) 'Fall 3', lines, rest			
+				do i=1,numProc
+					sendcounts(i) = lines*(numEl+1)
+			
+					if (i==numProc) then
+						sendcounts(i)=rest*(numEl +1)
+					endif
+			
+					displacement(i)=lines*(numEl+1)*(i-1)
+
+				enddo
+			endif		
 		endif
 		
 		do i=1,numProc
-			if ((i .eq. 1)) then
-				sendcounts(i) = sendcounts(i) + 1 * (numEl + 1)
-				displacement(i) = 0
-			elseif (i .eq. numProc)	then
-				sendcounts(i) = sendcounts(i) + 2 * (numEl + 1)
-				displacement(i) = displacement(i) - (numEl + 1)
-			else
-				sendcounts(i) = sendcounts(i) + 2 * (numEl + 1)
-				displacement(i) = displacement(i) !- (numEl + 1)
-			endif
+			sendcounts(i) = sendcounts(i) + 2 * (numEl + 1)
 			write(*,*) sendcounts(i)
 			print*
 			write(*,*) displacement(i)
