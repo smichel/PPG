@@ -62,24 +62,25 @@ MODULE peter
 			
 	END SUBROUTINE getIndices
 	
-! 	SUBROUTINE communicate(numEl, myRank, numProc, lines, chunk)
-! 		USE mpi
-! 		IMPLICIT NONE
-! 		integer, intent(in) :: numProc, myRank, numEl, lines
-! 		double precision, dimension(:,:), intent(inout) :: chunk
-! 		integer :: status(MPI_STATUS_SIZE), ierr
-!
-! 		
-! 		if (myRank .eq. 0) then
-! 			call MPI_SENDRECV(chunk(:,lines-1), numEl+1, MPI_DOUBLE_PRESICION, myRank, myRank, chunk(:,1), numEl+1, MPI_DOUBLE_PRECISION, & 
-! 			& myRank+1, myRank+1, MPI_COMM_WORLD, status, ierr)
-!
-! 		elseif (myRank .eq. (numProc-1))
-! 			call MPI_SENDRECV(chunk(:,2), numEl+1, MPI_DOUBLE_PRESICION, myRank, myRank, chunk(:,lines), numEl+1, MPI_DOUBLE_PRECISION, & 
-! 			& myRank-1, myRank-1, MPI_COMM_WORLD, status, ierr)
-! 		else
-! 		endif
-! 		
-! 		
-! 	END SUBROUTINE communicate
+	SUBROUTINE communicate(numEl, myRank, numProc, lines, chunk)
+		USE mpi
+		IMPLICIT NONE
+		integer, intent(in) :: numProc, myRank, numEl, lines
+		double precision, dimension(:,:), intent(inout) :: chunk
+		integer :: status(MPI_STATUS_SIZE), ierr, request
+		
+		if (myRank .lt. (numProc-1)) then
+			call MPI_SEND(chunk(:,lines-1),numEl+1, MPI_DOUBLE_PRECISION, myRank+1, 99 ,MPI_COMM_WORLD, ierr)
+			call MPI_RECV(chunk(:,lines),  numEl+1, MPI_DOUBLE_PRECISION, myRank+1, 99,MPI_COMM_WORLD, status, ierr)
+		end if
+		
+		if (myRank .gt. 0) then	
+			call MPI_RECV(chunk(:,1), numEl+1, MPI_DOUBLE_PRECISION, myRank-1, 99, MPI_COMM_WORLD, status, ierr)
+			call MPI_SEND(chunk(:,2), numEl+1, MPI_DOUBLE_PRECISION, myRank-1, 99, MPI_COMM_WORLD, ierr)
+		endif
+		
+		
+		
+		
+	END SUBROUTINE communicate
 END MODULE peter 

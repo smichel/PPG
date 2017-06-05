@@ -60,11 +60,22 @@ MODULE run
 					&            - chunk(i+1,j) - chunk(i,j-1))/4.	
 				enddo 
 			enddo
-
+			
+			if (maxval(abs(dummy(2:numEl-1,2:lines-1))) < accuracy) then
+				accuracyhit=1
+			endif
+			
 		! die neue Matrix ist die Summe aus der alten Matrix und der Hilfsmatrix 
 		chunk(2:numEl,2:lines-1) = chunk(2:numEl,2:lines-1) &
 							&	+ dummy(2:numEl,2:lines-1)
 							
+		call MPI_REDUCE(accuracyhit, exitcriteria, 1, MPI_INTEGER, MPI_PROD, 0, MPI_COMM_WORLD,ierror)
+		
+		call MPI_BCAST(exitcriteria, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierror)
+		
+		if (exitcriteria .eq. 1) then
+			exit
+		end if
 			
 		call MPI_BARRIER(MPI_COMM_WORLD, ierror)
 		
