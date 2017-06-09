@@ -18,8 +18,8 @@ MODULE run
 		integer, dimension(:), allocatable :: displacement, sendcounts ! Vektoren fuer ScatterV und GatherV
 		double precision, dimension(:,:), allocatable :: chunk ! Teilmatrix
 		double precision :: accuracy = 10.**(-7)
-		integer :: lines, rest, status(MPI_STATUS_SIZE) ! blabla
-		integer :: accuracyhit, exitcriteria
+		integer :: lines, rest, status(MPI_STATUS_SIZE) 
+		integer :: accuracyhit, exitcriteria	! Info ob Genauigkeit erreicht ist
 		! calculate with jacobi Method
 		
 		
@@ -62,17 +62,17 @@ MODULE run
 			enddo
 			
 			if (maxval(abs(dummy(2:numEl-1,2:lines-1))) < accuracy) then
-				accuracyhit=1
+				accuracyhit=1	
 			endif
 			
 		! die neue Matrix ist die Summe aus der alten Matrix und der Hilfsmatrix 
 		chunk(2:numEl,2:lines-1) = chunk(2:numEl,2:lines-1) &
 							&	+ dummy(2:numEl,2:lines-1)
-							
-		call MPI_REDUCE(accuracyhit, exitcriteria, 1, MPI_INTEGER, MPI_PROD, 0, MPI_COMM_WORLD,ierror)
-		
+							! Sind alle accuracyhit = 1 so ist die gewuenschte Genauigkeit erreicht
+		call MPI_REDUCE(accuracyhit, exitcriteria, 1, MPI_INTEGER, MPI_PROD, 0, MPI_COMM_WORLD,ierror) 
+		! exitcriteria ist wird an alle Prozesse gesendet 
 		call MPI_BCAST(exitcriteria, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierror)
-		
+		! Falls Genauigkeit erreicht ist wird die Schleife abgebrochen
 		if (exitcriteria .eq. 1) then
 			exit
 		end if
