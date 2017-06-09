@@ -11,8 +11,9 @@ MODULE peter
 		
 		allocate(displacement(numProc))
 		allocate(sendcounts(numProc))
-		
-		if (mod((numEl - 1),numProc)==0) then !comments need to be added
+		! Fuer verschiedene Anzahl an Prozesssen werden sendcounts und displacement berechnet
+		! Zunaechst werden nur die Zeilen verteilt auf denen auch gerechnet wird
+		if (mod((numEl - 1),numProc)==0) then	! Falls die Anzahl der Zeilen auf alle Prozesse aufgeteilt werden kann
 			! write (*,*) 'Fall 1'
 			lines=(numEl - 1)/numProc
 			
@@ -24,8 +25,8 @@ MODULE peter
 			enddo
 			
 		else 
-			if (mod(numEl-1,numProc-1) == 0) then
-				lines = int((numEl-1)/(numProc))
+			if (mod(numEl-1,numProc-1) == 0) then	! Sonderfall, falls der letzte Prozess keine Zeilen zum Rechnen bekommt
+				lines = int((numEl-1)/(numProc))	! In diesem Fall bekommt der letzte Prozess mehr Zeilen als alle anderen
 				rest = mod(numEl-1,numProc)
 				! write (*,*) 'Fall 2', lines, rest			
 				do i=1,numProc
@@ -39,7 +40,7 @@ MODULE peter
 
 				enddo
 				
-			else
+			else	 ! Der letzte Prozess bekommt die uebrig gebliebenen Zeilen
 
 				lines = int((numEl-1)/(numProc-1))
 				rest = mod(numEl-1,numProc-1)
@@ -58,7 +59,7 @@ MODULE peter
 		endif
 		
 
-		sendcounts = sendcounts + 2 * (numEl + 1)
+		sendcounts = sendcounts + 2 * (numEl + 1)	! Jede Teilmatrix bekommt noch zwei Linien als Randbedingung
 			
 	END SUBROUTINE getIndices
 	
