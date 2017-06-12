@@ -49,7 +49,7 @@ MODULE run
 		
 		
 		! Schleife wird durchlaufen, solange die maximale Anzahl an Iterationen 
-		! nicht ueberschritten ist (wenn nicht vorher die gewuenschte Genauigkeit erreicht ist)
+		! nicht ueberschritten ist 
 		do while (t < iterations)
 			dummy = chunk
 			do j=2, lines-1
@@ -66,24 +66,22 @@ MODULE run
 							&	+ dummy(2:numEl,2:lines-1)
 							
 			
-		call MPI_BARRIER(MPI_COMM_WORLD, ierror)
+		call MPI_BARRIER(MPI_COMM_WORLD, ierror)	!!!111!! Brauchen wir die Barrier ueberhaupt? Send - Receive ist ja Blocking Communication
 		
-		call communicate(numEl, myRank, numProc, lines, chunk)
+		call communicate(numEl, myRank, numProc, lines, chunk)	! Austauschen der Halolines
 		
 		call MPI_BARRIER(MPI_COMM_WORLD, ierror)
 
 		t = t+1
 		
 		enddo 
-		
+		! Matrizen werden wieder zusammengefuehrt
 		call MPI_GATHERV(chunk, sendcounts(myRank+1), MPI_DOUBLE_PRECISION, &
 			& matrix, sendcounts, displacement, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierror)
 		
-		! Ausgabe der benoetigten Iterationen 
 		
-		
-		call MPI_BARRIER(MPI_COMM_WORLD, ierror)
-		 
+		call MPI_BARRIER(MPI_COMM_WORLD, ierror)	! Bevor die Matrix ausgegeben wird muss das MPI_GATHERV beendet sein
+		! Ausgabe der benoetigten Iterationen 		 
 		if (myRank .eq. 0) then 
 			write(*,'("Benoetigte Iterationen ", i6.0)') t
 			print*
