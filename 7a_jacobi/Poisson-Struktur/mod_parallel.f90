@@ -1,4 +1,4 @@
-MODULE peter
+MODULE parallel
 	IMPLICIT NONE
 	CONTAINS
 		
@@ -83,4 +83,4 @@ MODULE peter
 			call MPI_SEND(chunk(:,2), numEl+1, MPI_DOUBLE_PRECISION, myRank-1, 99, MPI_COMM_WORLD, ierr)
 		endif
 	END SUBROUTINE communicate
-END MODULE peter 
+END MODULE parallel 

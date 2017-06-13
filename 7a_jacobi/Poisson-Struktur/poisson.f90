@@ -2,7 +2,7 @@ PROGRAM Poisson
 	USE initialize
 	USE run
 	USE finalize
-	USE peter
+	USE parallel
 	IMPLICIT NONE
 	double precision, dimension(:,:), allocatable :: matrix ! or whatever fits
 

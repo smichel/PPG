@@ -5,7 +5,7 @@ MODULE run
 	
 	SUBROUTINE calculate(matrix) !more parameters as needed
 		USE mpi
-		USE peter
+		USE parallel
 		USE finalize
 		IMPLICIT NONE
 		
