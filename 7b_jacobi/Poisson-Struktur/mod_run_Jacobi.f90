@@ -76,12 +76,8 @@ MODULE run
 		if (exitcriteria .eq. 1) then
 			exit
 		end if
-			
-		call MPI_BARRIER(MPI_COMM_WORLD, ierror)	!!!111!! Brauchen wir die Barrier ueberhaupt? Send - Receive ist ja Blocking Communication
 		
-		call communicate(numEl, myRank, numProc, lines, chunk)	! Austauschen der Halolines
-		
-		call MPI_BARRIER(MPI_COMM_WORLD, ierror)
+		call communicate(numEl, myRank, numProc, lines, chunk)	! Austauschen der Halolines, blockierende Kommunikation
 
 		t = t+1
 		
@@ -90,16 +86,15 @@ MODULE run
 		call MPI_GATHERV(chunk, sendcounts(myRank+1), MPI_DOUBLE_PRECISION, &
 			& matrix, sendcounts, displacement, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierror)
 		
-		
-		call MPI_BARRIER(MPI_COMM_WORLD, ierror)	! Bevor die Matrix ausgegeben wird muss das MPI_GATHERV beendet sein
-		 
+				 
 		! Ausgabe der benoetigten Iterationen 
 		if (myRank .eq. 0) then 
 			write(*,'("Benoetigte Iterationen ", i6.0)') t
 			print*
 			call outputMatrix(matrix)
 		endif
-
+		call freeMatrix(chunk)
+		call freeMatrix(dummy)
 		call MPI_FINALIZE(ierror)	! Beenden des Parallelisierungsprozesses
 
 	END SUBROUTINE calculate
