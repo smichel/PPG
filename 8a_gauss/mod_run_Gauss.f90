@@ -14,11 +14,10 @@ MODULE run
 		integer :: numEl = 96	! matrix hat (numEl+1)x(numEl+1) Elemente 
 		integer :: iterations = 100000	! maximale Anzahl an Iterationen
 		integer :: t, i, j	! Zaehlindizes 		
-		double precision, dimension(:,:),allocatable :: dummy	! Hilfsmatrix, auf die neue Elemente geschrieben werden
 		integer, dimension(:), allocatable :: displacement, sendcounts ! Vektoren fuer ScatterV und GatherV
 		double precision, dimension(:,:), allocatable :: chunk ! Teilmatrix
 		double precision :: accuracy = 10.**(-7)
-		integer :: lines, rest, status(MPI_STATUS_SIZE)
+		integer :: lines, rest, request, request2, status(MPI_STATUS_SIZE)
 		! calculate with jacobi Method
 		
 		
@@ -39,7 +38,6 @@ MODULE run
 		! write(*,*) lines
 	
 		allocate(chunk((numEl + 1),lines)) ! In Abhängigkeit von der Prozessnummer wird die Teilmatrix alloziiert
-		allocate(dummy((numEl + 1),lines))
 		
 		call MPI_SCATTERV(matrix, sendcounts, displacement, MPI_DOUBLE_PRECISION, chunk, sendcounts(myRank+1),&
 			& MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierror) ! Matrix wird auf Teilmatrizen aufgeteilt	
@@ -50,24 +48,34 @@ MODULE run
 		! Schleife wird durchlaufen, solange die maximale Anzahl an Iterationen 
 		! nicht ueberschritten ist 
 		do while (t < iterations)
-			dummy = chunk
+			
+			if (myRank < (numProc-1)) then 
+				call MPI_ISEND(chunk(:,lines-1),numEl+1, MPI_DOUBLE_PRECISION, myRank+1, myRank ,MPI_COMM_WORLD, request, ierror)
+				call MPI_IRECV(chunk(:,lines), numEl+1, MPI_DOUBLE_PRECISION, myRank+1, myRank+1, MPI_COMM_WORLD, request, ierror)
+			endif	
+			
+			if (myRank > 0) then
+				call MPI_IRECV(chunk(:,1),  numEl+1, MPI_DOUBLE_PRECISION, myRank-1, myRank-1, MPI_COMM_WORLD, request2, ierror)
+				call MPI_WAIT(request2, status, ierror)
+			endif
+			
 			do j=2, lines-1
+			if ((j .eq. 3) .AND. (myRank > 0)) then
+				call MPI_ISEND(chunk(:,2),numEl+1, MPI_DOUBLE_PRECISION, myRank-1, myRank ,MPI_COMM_WORLD, request2, ierror)
+			endif
 				do i=2, numEl
 					! neues Element wird aus umliegenden alten Elementen berechnet und 
 					! zunächst in die Hilfsmatrix geschrieben
-					dummy(i,j)  = -(- chunk(i,j+1) - chunk(i-1,j) + 4.*chunk(i,j) &
-					&            - chunk(i+1,j) - chunk(i,j-1))/4.	
-				enddo 
+					
+					chunk(i,j)  = chunk(i,j) -(- chunk(i,j+1) - chunk(i-1,j) + 4.*chunk(i,j) &
+					&            - chunk(i+1,j) - chunk(i,j-1))/4.
+				enddo
+				
+				if ((j .eq. lines-2) .AND. (myRank < (numProc-1))) then
+					call MPI_WAIT(request, status, ierror)
+				endif  
 			enddo
-
-		! die neue Matrix ist die Summe aus der alten Matrix und der Hilfsmatrix 
-		chunk(2:numEl,2:lines-1) = chunk(2:numEl,2:lines-1) &
-							&	+ dummy(2:numEl,2:lines-1)
-							
 		
-		call communicate(numEl, myRank, numProc, lines, chunk)	! Austauschen der Halolines
-		
-
 		t = t+1
 		
 		enddo 
@@ -82,7 +90,6 @@ MODULE run
 			call outputMatrix(matrix)
 		endif
 		call freeMatrix(chunk)
-		call freeMatrix(dummy)
 		call MPI_FINALIZE(ierror)	! Beenden des Parallelisierungsprozesses
 
 	END SUBROUTINE calculate
