@@ -51,6 +51,7 @@ MODULE run
 			
 			if (myRank < (numProc-1)) then 
 				call MPI_ISEND(chunk(:,lines-1),numEl+1, MPI_DOUBLE_PRECISION, myRank+1, myRank ,MPI_COMM_WORLD, request, ierror)
+				call MPI_WAIT(request, status, ierror)
 				call MPI_IRECV(chunk(:,lines), numEl+1, MPI_DOUBLE_PRECISION, myRank+1, myRank+1, MPI_COMM_WORLD, request, ierror)
 			endif	
 			
@@ -62,6 +63,7 @@ MODULE run
 			do j=2, lines-1
 			if ((j .eq. 3) .AND. (myRank > 0)) then
 				call MPI_ISEND(chunk(:,2),numEl+1, MPI_DOUBLE_PRECISION, myRank-1, myRank ,MPI_COMM_WORLD, request2, ierror)
+				call MPI_WAIT(request2, status, ierror)
 			endif
 				do i=2, numEl
 					! neues Element wird aus umliegenden alten Elementen berechnet und 
