@@ -49,6 +49,7 @@ MODULE run
 		! nicht ueberschritten ist 
 		do while (t < iterations)
 			
+			
 			if (myRank < (numProc-1)) then 
 				call MPI_ISEND(chunk(:,lines-1),numEl+1, MPI_DOUBLE_PRECISION, myRank+1, myRank ,MPI_COMM_WORLD, request, ierror)
 				call MPI_WAIT(request, status, ierror)

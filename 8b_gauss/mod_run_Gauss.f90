@@ -12,7 +12,7 @@ MODULE run
 		integer :: myRank,numProc,ierror
 		double precision, dimension(0:,0:), intent(inout) :: matrix
 		integer :: numEl = 96	! matrix hat (numEl+1)x(numEl+1) Elemente 
-		integer :: iterations = 100000	! maximale Anzahl an Iterationen
+		integer :: iterations = 10000	! maximale Anzahl an Iterationen
 		integer :: t, i, j	! Zaehlindizes 		
 		integer, dimension(:), allocatable :: displacement, sendcounts ! Vektoren fuer ScatterV und GatherV
 		double precision, dimension(:,:), allocatable :: chunk, diff ! Teilmatrix
@@ -46,7 +46,7 @@ MODULE run
 
 		t = 0
 		accuracyhit = 0
-		
+		exitcriteria = 0
 		
 		! Schleife wird durchlaufen, solange die maximale Anzahl an Iterationen 
 		! nicht ueberschritten ist 
@@ -87,11 +87,17 @@ MODULE run
 				accuracyhit = 1
 			endif
 			
-			!if (myRank .eq. 0) then
-			!	call MPI_IREDUCE(accuracyhit, exitcriteria, 1, MPI_INTEGER, MPI_PROD, 0, MPI_COMM_WORLD, request3, ierror)
-			!	call MPI_WAIT(request3, status, ierror)
-			!	write(*,*) exitcriteria  	
-			!endif
+			! Warum funktioniert das hier nicht??
+			if ((t > numProc) .AND. (exitcriteria == 0) .AND. (accuracyhit == 1)) then
+				call MPI_IREDUCE(accuracyhit, exitcriteria, 1, MPI_INTEGER, MPI_PROD, myRank, MPI_COMM_WORLD, request3,ierror)
+				call MPI_WAIT(request3, status, ierror)
+				if (exitcriteria == 1) then
+					iterations = t + myRank
+				endif
+			endif
+			
+			
+			
 		t = t+1
 		
 		enddo 
