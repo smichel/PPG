@@ -19,7 +19,7 @@ mod_finalize.o: mod_finalize.f90
 	mpif90 -c mod_finalize.f90
 
 run:poisson_Jacobi.x
-	/usr/bin/time mpiexec -n 5 ./poisson_Jacobi.x
+	/usr/bin/time mpiexec -n 10 ./poisson_Jacobi.x
 
 clean: 
 	rm *.mod *.o *.x

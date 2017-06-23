@@ -9,7 +9,7 @@ MODULE run
 		USE finalize
 		IMPLICIT NONE
 		
-		integer :: myRank,numProc,ierror, request, request2
+		integer :: myRank,numProc,ierror, request, request2,request3,request4
 		double precision, dimension(0:,0:), intent(inout) :: matrix
 		integer :: numEl = 96	! matrix hat (numEl+1)x(numEl+1) Elemente 
 		integer :: iterations = 100000	! maximale Anzahl an Iterationen
@@ -57,7 +57,7 @@ MODULE run
 			if (myRank < (numProc-1)) then 
 				call MPI_ISEND(chunk(:,lines-1),numEl+1, MPI_DOUBLE_PRECISION, myRank+1, myRank ,MPI_COMM_WORLD, request, ierror)
 				call MPI_WAIT(request, status, ierror)
-				call MPI_IRECV(chunk(:,lines), numEl+1, MPI_DOUBLE_PRECISION, myRank+1, myRank+1, MPI_COMM_WORLD, request, ierror)
+				call MPI_IRECV(chunk(:,lines), numEl+1, MPI_DOUBLE_PRECISION, myRank+1, myRank+1, MPI_COMM_WORLD, request3, ierror)
 			endif	
 			
 			if (myRank > 0) then
@@ -70,8 +70,8 @@ MODULE run
 				dummy2=dummy(:,2)
 				dummy2(2:numEl) = chunk(2:numEl,2) + dummy(2:numEl,2)
 				
-				call MPI_ISEND(dummy2,numEl+1, MPI_DOUBLE_PRECISION, myRank-1, myRank ,MPI_COMM_WORLD, request2, ierror)
-				call MPI_WAIT(request2, status, ierror)
+				call MPI_ISEND(dummy2,numEl+1, MPI_DOUBLE_PRECISION, myRank-1, myRank ,MPI_COMM_WORLD, request4, ierror)
+				call MPI_WAIT(request4, status, ierror)
 			endif
 				do i=2, numEl
 					! neues Element wird aus umliegenden alten Elementen berechnet und 
@@ -84,7 +84,7 @@ MODULE run
 				enddo
 				
 				if ((j .eq. lines-2) .AND. (myRank < (numProc-1))) then
-					call MPI_WAIT(request, status, ierror)
+					call MPI_WAIT(request3, status, ierror)
 				endif  
 			enddo
 
